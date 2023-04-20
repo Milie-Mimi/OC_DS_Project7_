@@ -14,8 +14,9 @@ from sklearn.impute import IterativeImputer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 # --------------------------------------------------------------------
-# -- SHAPE & NAN
+# ------------------------ SHAPE & NAN -------------------------------
 # --------------------------------------------------------------------
+
 def shape_total_nan(df):
     '''Fonction qui retourne le nombre de lignes,
     de variables, le nombre total de valeurs manquantes et
@@ -43,9 +44,11 @@ def shape_total_nan(df):
     print(f"% total de NaN du dataset: {missing_percent}%")
 
 
+    
 # --------------------------------------------------------------------
-# -- DESCRIPTION DES VARIABLES
+# ---------------- DESCRIPTION DES VARIABLES -------------------------
 # --------------------------------------------------------------------
+
 def describe_variables_light(data):
     ''' Fonction qui prend un dataframe en entrée, et retourne un
     récapitulatif qui contient le nom des variables, leur type, un
@@ -240,9 +243,11 @@ def describe_variables(data):
     return df.reset_index(drop=True)
 
 
+
 # --------------------------------------------------------------------
-# -- DESCRIPTION ET STATISTIQUES
+# ----------- DESCRIPTION ET STATISTIQUES ----------------------------
 # --------------------------------------------------------------------
+
 def describe_stat(df, fig):
     '''Fonction qui prend un dataframe en entrée et 
     retourne ses principales statistiques descriptives.
@@ -309,7 +314,7 @@ def describe_stat(df, fig):
 
 
 # --------------------------------------------------------------------
-# -- FONCTIONS VALEURS MANQUANTES
+# ---------------- FONCTIONS VALEURS MANQUANTES ----------------------
 # --------------------------------------------------------------------
 
 def nan_a_retraiter(df):
@@ -472,8 +477,9 @@ def plot_tx_remplissage(df, fig):
     etiquette_h(ax)
     plt.show()
 
+    
 # --------------------------------------------------------------------
-# -- CORRELATIONS
+# --------------------------- CORRELATIONS ---------------------------
 # --------------------------------------------------------------------
 
 
@@ -517,7 +523,7 @@ def pairs_corr(df, liste_var_quanti, seuil = 0.5):
 
 
 # --------------------------------------------------------------------
-# -- FEATURE ENGINEERING
+# ------------------- FEATURE ENGINEERING ----------------------------
 # --------------------------------------------------------------------
 
 def categories_encoder(df, nan_as_category = True):
@@ -560,9 +566,8 @@ def categories_encoder(df, nan_as_category = True):
 
 
 
-
 # --------------------------------------------------------------------
-# -- FONCTIONS PLOTS
+# ---------------------- FONCTIONS PLOTS ---------------------------- 
 # --------------------------------------------------------------------
 
 def etiquette_v(ax, espace=5):
@@ -628,9 +633,13 @@ def etiquette_h(ax):
         width, height = p.get_width(),p.get_height()
         x = p.get_x() + width + 0.02
         y = p.get_y() + height / 2
-        ax.annotate(etiquette,(x,y))
-        
-
+        ax.annotate(etiquette,(x,y))    
+    
+    
+    
+# --------------------------------------------------------------------
+# ----------------- PLOTS VARIABLES QUANTITATIVES --------------------
+# -------------------------------------------------------------------- 
 
 def draw_text_hist(df, var, ax):
     '''Fonction qui permet d'afficher du texte dans chaque histogramme.
@@ -651,7 +660,7 @@ def draw_text_hist(df, var, ax):
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     ax.add_artist(at)
 
-    
+
 def univariate_plots_hist(df, liste_col_quanti, nb_lignes, nb_col, nb_bins, fig):
     '''Représentation par histogramme des variables quantitatives
 
@@ -678,9 +687,10 @@ def univariate_plots_hist(df, liste_col_quanti, nb_lignes, nb_col, nb_bins, fig)
     
     plt.tight_layout(w_pad=2, h_pad=2)
     plt.show()
-    plt.close()    
+    plt.close()
     
-    
+
+
 def univariate_plots_box(df, liste_col_quanti, nb_lignes, nb_col, fig, outliers=False):
     '''Représentation par boxplot des variables quantitatives
 
@@ -706,18 +716,48 @@ def univariate_plots_box(df, liste_col_quanti, nb_lignes, nb_col, fig, outliers=
     
     plt.tight_layout(w_pad=2, h_pad=2)
     plt.show()
-    plt.close()    
+    plt.close()
+
+
+def bivariate_kdeplots(df, var_quali, liste_var_quanti, nb_lignes, nb_col, palette):
+    '''KDE plot permettant de visualiser les distributions multiples des variables quantitatives
+    en fonction d'une variable qualitative en légende.
     
+
+    Arguments:
+    --------------------------------
+    df: dataframe: tableau en entrée, obligatoire
+    var_quali: str: variable sur laquelle effectuer le "hue"
+    liste_var_quanti: liste: liste des variables quantitatives, obligatoire
+    nb_lignes: int: nombre de lignes
+    nb_col: int: nombre de plots par colonne
     
+    return:
+    --------------------------------
+    None
+    '''
+    fig = plt.figure(figsize=(15,20))
+    for i, c in enumerate(liste_var_quanti,1):
+        ax = fig.add_subplot(nb_lignes,nb_col,i)
+        ax = sns.kdeplot(data = df, x = c, hue = var_quali, multiple="stack", palette=palette)
+        ax.set_title(c)
+        ax.title.set_fontweight('bold')
+        plt.xticks(rotation=45, ha='right')
     
+    plt.tight_layout(w_pad=2, h_pad=2)
+    plt.show()
+    plt.close()
+    
+
+
     
     
     
 # --------------------------------------------------------------------
-# -- DISTRIBUTION DES MODALITES DES VARIABLES CATEGORIELLES
-# --------------------------------------------------------------------        
-        
-        
+# ----------------- PLOTS VARIABLES CATEGORIELLES --------------------
+# --------------------------------------------------------------------
+
+
 def categ_distrib_plot(df, liste_categ_col, nb_lignes, nb_col, fig):
     '''Barplot de distribution des modalités des variables catégorielles avec le nombre de 
     modalités en titre.
@@ -752,38 +792,8 @@ def categ_distrib_plot(df, liste_categ_col, nb_lignes, nb_col, fig):
         plt.xticks(rotation=45, ha='right')
 
     plt.tight_layout(w_pad=2, h_pad=2)
-    
 
-def bivariate_kdeplots(df, var_quali, liste_var_quanti, nb_lignes, nb_col, palette):
-    '''KDE plot permettant de visualiser les distributions multiples des variables quantitatives
-    en fonction d'une variable qualitative en légende.
     
-
-    Arguments:
-    --------------------------------
-    df: dataframe: tableau en entrée, obligatoire
-    var_quali: str: variable sur laquelle effectuer le "hue"
-    liste_var_quanti: liste: liste des variables quantitatives, obligatoire
-    nb_lignes: int: nombre de lignes
-    nb_col: int: nombre de plots par colonne
-    
-    return:
-    --------------------------------
-    None
-    '''
-    fig = plt.figure(figsize=(15,20))
-    for i, c in enumerate(liste_var_quanti,1):
-        ax = fig.add_subplot(nb_lignes,nb_col,i)
-        ax = sns.kdeplot(data = df, x = c, hue = var_quali, multiple="stack", palette=palette)
-        ax.set_title(c)
-        ax.title.set_fontweight('bold')
-        plt.xticks(rotation=45, ha='right')
-    
-    plt.tight_layout(w_pad=2, h_pad=2)
-    plt.show()
-    plt.close()
-    
-
 def bivariate_plots_box(df, var_quali, liste_var_quanti, nb_lignes, nb_col, fig, outliers=False):
     '''Barplot de distribution des modalités des variables catégorielles avec le nombre de 
     modalités en titre.
@@ -818,6 +828,7 @@ def bivariate_plots_box(df, var_quali, liste_var_quanti, nb_lignes, nb_col, fig,
     plt.tight_layout(w_pad=2, h_pad=2)
     plt.show()
     plt.close()
+
 
 def bivariate_barplots_categ(df, var_x, var_hue):
     '''Barplot de distribution des modalités des variables catégorielles
