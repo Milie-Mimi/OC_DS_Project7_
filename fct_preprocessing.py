@@ -96,8 +96,10 @@ def preprocess_app_train():
     ## Age du client
     app_train['AGE'] = round(app_train['DAYS_BIRTH'] / 365 * -1, 0)
     del app_train['DAYS_BIRTH']
-    bins = pd.IntervalIndex.from_tuples([(0, 30), (30, 50), (50,100)])
-    app_train['AGE_RANGE'] = pd.cut(app_train['AGE'], bins=bins)
+    app_train.loc[app_train['AGE'] <= 30, 'AGE_RANGE'] = '< 30 YEARS OLD'
+    app_train.loc[(app_train['AGE'] > 30) & (app_train['AGE'] <= 50),
+                  'AGE_RANGE'] = 'BETWEEN 31 AND 50 YEARS OLD'
+    app_train.loc[app_train['AGE'] > 50, 'AGE_RANGE'] = '> 50 YEARS OLD'
 
     ## Ancienneté du client à son poste actuel
     app_train['YEARS_EMPLOYED'] = round(app_train['DAYS_EMPLOYED'] / 365 * -1, 2)
@@ -116,7 +118,16 @@ def preprocess_app_train():
     ## Nb années avant la demande où le client a modifié son enregistrement
     app_train['YEARS_REGISTRATION'] = round(app_train['DAYS_REGISTRATION'] / 365 * -1, 0)
     del app_train['DAYS_REGISTRATION']
-    app_train['YEARS_REGISTRATION_RANGE'] = pd.qcut(app_train['YEARS_REGISTRATION'], q=4)
+    app_train.loc[app_train['YEARS_REGISTRATION'] <= 6, 'YEARS_REGISTRATION_RANGE'] = '< 6 YEARS'
+
+    app_train.loc[(app_train['YEARS_REGISTRATION'] > 6) & (app_train['YEARS_REGISTRATION'] <= 12),
+                  'YEARS_REGISTRATION_RANGE'] = 'BETWEEN 6 AND 12 YEARS'
+
+    app_train.loc[(app_train['YEARS_REGISTRATION'] > 12) & (app_train['YEARS_REGISTRATION'] <= 20),
+                  'YEARS_REGISTRATION_RANGE'] = 'BETWEEN 13 AND 20 YEARS'
+
+    app_train.loc[app_train['YEARS_REGISTRATION'] > 20, 'YEARS_REGISTRATION_RANGE'] = '> 20 YEARS'
+    
 
     ## Heure où le client a demandé son prêt
     app_train.loc[app_train['HOUR_APPR_PROCESS_START'] < 8,'HOUR_APPR_PROCESS_START_RANGE'] = 'Evening/Night'
@@ -131,12 +142,28 @@ def preprocess_app_train():
     ## Nb années avant la demande où le client a changé son document d'identité
     app_train['YEARS_ID_PUBLISH'] = round(app_train['DAYS_ID_PUBLISH'] / 365 * -1, 2)
     del app_train['DAYS_ID_PUBLISH']
-    app_train['YEARS_ID_PUBLISH_RANGE'] = pd.qcut(app_train['YEARS_ID_PUBLISH'], q=4)
+    app_train.loc[app_train['YEARS_ID_PUBLISH'] <= 5, 'YEARS_ID_PUBLISH_RANGE'] = '< 5 YEARS'
+
+    app_train.loc[(app_train['YEARS_ID_PUBLISH'] > 5) & (app_train['YEARS_ID_PUBLISH'] <= 9),
+                  'YEARS_ID_PUBLISH_RANGE'] = 'BETWEEN 5 AND 9 YEARS'
+
+    app_train.loc[(app_train['YEARS_ID_PUBLISH'] > 9) & (app_train['YEARS_ID_PUBLISH'] <= 12),
+                  'YEARS_ID_PUBLISH_RANGE'] = 'BETWEEN 10 AND 12 YEARS'
+
+    app_train.loc[app_train['YEARS_ID_PUBLISH'] > 12, 'YEARS_ID_PUBLISH_RANGE'] = '> 12 YEARS'
 
     ## Nb années avant la demande où le client a changé son numéro de téléphone
     app_train['YEARS_LAST_PHONE_CHANGE'] = round(app_train['DAYS_LAST_PHONE_CHANGE'] / 365 * -1, 2)
     del app_train['DAYS_LAST_PHONE_CHANGE']
-    app_train['YEARS_LAST_PHONE_CHANGE_RANGE'] = pd.qcut(app_train['YEARS_LAST_PHONE_CHANGE'], q=4)
+    app_train.loc[app_train['YEARS_LAST_PHONE_CHANGE'] <= 1, 'YEARS_LAST_PHONE_CHANGE_RANGE'] = '< 1 YEAR'
+
+    app_train.loc[(app_train['YEARS_LAST_PHONE_CHANGE'] > 1) & (app_train['YEARS_LAST_PHONE_CHANGE'] <= 2),
+                  'YEARS_LAST_PHONE_CHANGE_RANGE'] = 'BETWEEN 1 AND 2 YEARS'
+
+    app_train.loc[(app_train['YEARS_LAST_PHONE_CHANGE'] > 2) & (app_train['YEARS_LAST_PHONE_CHANGE'] <= 4),
+                  'YEARS_LAST_PHONE_CHANGE_RANGE'] = 'BETWEEN 2 AND 4 YEARS'
+
+    app_train.loc[app_train['YEARS_LAST_PHONE_CHANGE'] > 4, 'YEARS_LAST_PHONE_CHANGE_RANGE'] = '> 4 YEARS'
 
     
     # Traitements modalités var quali
