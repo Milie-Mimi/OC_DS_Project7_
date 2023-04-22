@@ -274,6 +274,33 @@ def preprocess_app_train():
     app_train['INCOME_CREDIT_PERC'] = app_train['AMT_INCOME_TOTAL'] / app_train['AMT_CREDIT']
     app_train['CREDIT_GOODS_PERC'] = app_train['AMT_CREDIT'] / app_train['AMT_GOODS_PRICE']
     
+    ## Durée du crédit
+    app_train.loc[app_train['CREDIT_DURATION'] < 15,'CREDIT_DURATION_RANGE'] = 'SHORT < 15 Years'
+
+    app_train.loc[(app_train['CREDIT_DURATION'] >= 15) & (app_train['CREDIT_DURATION'] <= 20),
+                       'CREDIT_DURATION_RANGE'] = 'MEDIUM BETWEEN 15 & 20 Years'
+
+    app_train.loc[app_train['CREDIT_DURATION'] > 20, 'CREDIT_DURATION_RANGE'] = 'LONG > 20 Years'
+    
+    ## Taux d'endettement
+    app_train.loc[app_train['DEBT_RATIO'] < 0.15,'DEBT_RATIO_RANGE'] = 'VERY LOW < 15'
+
+    app_train.loc[(app_train['DEBT_RATIO'] >= 0.15) & (app_train['DEBT_RATIO'] <= 0.20),
+                       'DEBT_RATIO_RANGE'] = 'LOW BETWEEN 15 & 20 Years'
+
+    app_train.loc[(app_train['DEBT_RATIO'] > 0.20) & (app_train['DEBT_RATIO'] <= 0.35),
+                       'DEBT_RATIO_RANGE'] = 'MEDIUM BETWEEN 21 & 35'
+
+    app_train.loc[app_train['DEBT_RATIO'] > 0.35, 'DEBT_RATIO_RANGE'] = 'VERY HIGH > 35%'
+    
+    ## Revenus par personne
+    app_train.loc[app_train['INCOME_PER_PERSON'] < 45000,'INCOME_PER_PERSON_RANGE'] = 'LOW < 45K'
+
+    app_train.loc[(app_train['INCOME_PER_PERSON'] >= 45000) & (app_train['INCOME_PER_PERSON'] <= 75000),
+                       'INCOME_PER_PERSON_RANGE'] = 'MEDIUM BETWEEN 45K & 75K'
+
+
+    app_train.loc[app_train['INCOME_PER_PERSON'] > 75000, 'INCOME_PER_PERSON_RANGE'] = 'HIGH > 75K'
     
     app_train = app_train.set_index('SK_ID_CURR')
 
