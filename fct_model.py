@@ -30,7 +30,8 @@ def pipeline_model(model, numeric_features, numeric_transformer):
 
     # Transformations à effectuer sur nos variables
     preprocessor = ColumnTransformer(transformers=[
-        ('num', numeric_transformer, numeric_features),])
+        ('num', numeric_transformer, numeric_features)],
+                                     remainder='passthrough')
 
     # Définition de la pipeline du modèle: étapes de preprocessing + classifier
     pipeline_model = Pipeline(steps=[
@@ -52,7 +53,8 @@ def pipeline_model_balanced(model, numeric_features, numeric_transformer,
     
     # Transformations à effectuer sur nos variables
     preprocessor = ColumnTransformer(transformers=[
-        ('num', numeric_transformer, numeric_features),])
+        ('num', numeric_transformer, numeric_features)],
+                                     remainder='passthrough')
     
     # Définition de la pipeline du modèle: étapes de preprocessing + classifier
     pipeline_model_balanced = pipe(steps=[
@@ -123,7 +125,7 @@ def best_model(model_name, model, cv,
         if RandomizedSearchCV == False:
             # Optimisation via cross validation & GridSearch
             best_model, best_params = optimize_and_train_model(pipeline_model = model,
-                                                               xtrain = xtrain[numeric_features],
+                                                               xtrain = xtrain,
                                                                ytrain = ytrain,
                                                                params = params,
                                                                scoring = scoring,
@@ -132,7 +134,7 @@ def best_model(model_name, model, cv,
         else:
             # Optimisation via cross validation & RandomizedSearch
             best_model, best_params = optimize_and_train_model_RSCV(pipeline_model = model,
-                                                                    xtrain = xtrain[numeric_features],
+                                                                    xtrain = xtrain,
                                                                     ytrain = ytrain,
                                                                     params = params,
                                                                     scoring = scoring,
@@ -151,7 +153,7 @@ def best_model(model_name, model, cv,
         if RandomizedSearchCV == False:
         # Optimisation via cross validation & GridSearch
             best_model, best_params = optimize_and_train_model(pipeline_model = model,
-                                                               xtrain = xtrain[numeric_features],
+                                                               xtrain = xtrain,
                                                                ytrain = ytrain,
                                                                params = params,
                                                                scoring = scoring,
@@ -159,7 +161,7 @@ def best_model(model_name, model, cv,
         
         else:
             best_model, best_params = optimize_and_train_model_RSCV(pipeline_model = model,
-                                                                    xtrain = xtrain[numeric_features],
+                                                                    xtrain = xtrain,
                                                                     ytrain = ytrain,
                                                                     params = params,
                                                                     scoring = scoring,
