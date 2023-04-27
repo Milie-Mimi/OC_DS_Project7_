@@ -114,13 +114,13 @@ def optimize_and_train_model(pipeline_model, xtrain, ytrain, params, scoring, cv
     model_grid_cv.fit(xtrain, ytrain)
     
     # Outer cross-validation
-    outer_cv = KFold(n_splits = 10, shuffle = True, random_state = 42)
-    compar_train_val_scores(model= model_grid_cv, 
-                            cv = outer_cv, 
-                            xtrain = xtrain, 
-                            ytrain = ytrain,
-                            scoring = scoring)
-    
+    #outer_cv = KFold(n_splits = 10, shuffle = True, random_state = 42)
+    #compar_train_val_scores(model= model_grid_cv, 
+    #                        cv = outer_cv, 
+    #                        xtrain = xtrain, 
+    #                        ytrain = ytrain,
+    #                        scoring = scoring)
+
     best_model = model_grid_cv.best_estimator_
     best_params = model_grid_cv.best_params_
 
@@ -142,12 +142,12 @@ def optimize_and_train_model_RSCV(pipeline_model, xtrain, ytrain, params, scorin
     model_grid_cv.fit(xtrain, ytrain)
     
     # Outer cross-validation
-    outer_cv = KFold(n_splits = 10, shuffle = True, random_state = 42)
-    compar_train_val_scores(model= model_grid_cv, 
-                            cv = outer_cv, 
-                            xtrain = xtrain, 
-                            ytrain = ytrain,
-                            scoring = scoring)
+    #outer_cv = KFold(n_splits = 10, shuffle = True, random_state = 42)
+    #compar_train_val_scores(model= model_grid_cv, 
+    #                        cv = outer_cv, 
+    #                        xtrain = xtrain, 
+    #                        ytrain = ytrain,
+    #                        scoring = scoring)
     
     best_model = model_grid_cv.best_estimator_
     best_params = model_grid_cv.best_params_
