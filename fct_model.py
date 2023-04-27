@@ -2,6 +2,7 @@
 '''
 
 import time
+import pandas as pd
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -10,8 +11,9 @@ from sklearn.compose import ColumnTransformer
 
 from sklearn.pipeline import Pipeline
 
-from sklearn.model_selection import train_test_split, cross_validate, KFold, RepeatedStratifiedKFold
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, KFold
+from sklearn.model_selection import cross_validate
 
 from sklearn.metrics import make_scorer
 from sklearn.metrics import accuracy_score, recall_score, precision_score, roc_auc_score, fbeta_score
@@ -26,12 +28,12 @@ from imblearn.pipeline import Pipeline as pipe
 # --------------------------------------------------------------------  
 
 
-def pipeline_model(model, numeric_features, numeric_transformer):
+def pipeline_model(model, preprocessor):
 
     # Transformations à effectuer sur nos variables
-    preprocessor = ColumnTransformer(transformers=[
-        ('num', numeric_transformer, numeric_features)],
-                                     remainder='passthrough')
+    # preprocessor = ColumnTransformer(transformers=[
+    #    ('num', numeric_transformer, numeric_features)],
+    #                                 remainder='passthrough')
 
     # Définition de la pipeline du modèle: étapes de preprocessing + classifier
     pipeline_model = Pipeline(steps=[
@@ -42,7 +44,7 @@ def pipeline_model(model, numeric_features, numeric_transformer):
 
 
 
-def pipeline_model_balanced(model, numeric_features, numeric_transformer,
+def pipeline_model_balanced(model, preprocessor,
                             oversampling_strategy, undersampling_strategy):
 
     # Sur échantillonnage de la classe minoritaire (10% de la classe majoritaire ~= 23000)
@@ -52,9 +54,9 @@ def pipeline_model_balanced(model, numeric_features, numeric_transformer,
     undersampler = RandomUnderSampler(sampling_strategy = undersampling_strategy, random_state = 42)
     
     # Transformations à effectuer sur nos variables
-    preprocessor = ColumnTransformer(transformers=[
-        ('num', numeric_transformer, numeric_features)],
-                                     remainder='passthrough')
+    #preprocessor = ColumnTransformer(transformers=[
+    #    ('num', numeric_transformer, numeric_features)],
+    #                                 remainder='passthrough')
     
     # Définition de la pipeline du modèle: étapes de preprocessing + classifier
     pipeline_model_balanced = pipe(steps=[
@@ -66,6 +68,36 @@ def pipeline_model_balanced(model, numeric_features, numeric_transformer,
     return pipeline_model_balanced
 
 
+def compar_train_val_scores(model, cv, xtrain, ytrain, scoring):
+    
+    # Cross validation
+    cv_results = cross_validate(model, 
+                                xtrain, ytrain, 
+                                cv = cv, 
+                                scoring = scoring,
+                                return_train_score=True, 
+                                return_estimator=True,  n_jobs=2)
+    cv_results = pd.DataFrame(cv_results)
+    
+    # Distribution des erreurs d'entrainement et de test via cross-validation
+    scores = pd.DataFrame()
+    scores[["train_error", "validation_error"]] = cv_results[["train_score", "test_score"]]
+    
+    scores.plot.hist(bins=50, edgecolor="black", figsize=(8, 4))
+    plt.xlabel("Betascore")
+    _ = plt.title("Distribution du fbeta_score sur les données d'entrainement et de \n validation via cross-validation")
+    plt.show()
+    
+    # Moyenne et écart type moyen des erreurs sur les différentes cross validation
+    mean_score_train = scores['train_error'].mean()
+    std_score_train = scores['train_error'].std()
+    mean_score_validation = scores['validation_error'].mean()
+    std_score_validation = scores['validation_error'].std()
+    
+    print(f"Betascore train set: {mean_score_train:.4f} +/- {std_score_train:.4f}")
+    print(f"Betascore validation set: {mean_score_validation:.4f} +/- {std_score_validation:.4f}")
+
+
 
 def optimize_and_train_model(pipeline_model, xtrain, ytrain, params, scoring, cv):
     
@@ -73,7 +105,6 @@ def optimize_and_train_model(pipeline_model, xtrain, ytrain, params, scoring, cv
 
 
     # Réglage automatique des meilleurs hyperparamètres avec GridSearchCV
-    #inner_cv = KFold(n_splits = 5, shuffle = True, random_state = 42)
     model_grid_cv = GridSearchCV(pipeline_model, 
                                  param_grid = params, 
                                  cv = cv, 
@@ -82,11 +113,18 @@ def optimize_and_train_model(pipeline_model, xtrain, ytrain, params, scoring, cv
 
     model_grid_cv.fit(xtrain, ytrain)
     
+    # Outer cross-validation
+    outer_cv = KFold(n_splits = 10, shuffle = True, random_state = 42)
+    compar_train_val_scores(model= model_grid_cv, 
+                            cv = outer_cv, 
+                            xtrain = xtrain, 
+                            ytrain = ytrain,
+                            scoring = scoring)
+    
     best_model = model_grid_cv.best_estimator_
     best_params = model_grid_cv.best_params_
 
     return best_model, best_params
-
 
 
 def optimize_and_train_model_RSCV(pipeline_model, xtrain, ytrain, params, scoring, cv):
@@ -95,7 +133,6 @@ def optimize_and_train_model_RSCV(pipeline_model, xtrain, ytrain, params, scorin
 
 
     # Réglage automatique des meilleurs hyperparamètres avec GridSearchCV
-    #inner_cv = KFold(n_splits = 5, shuffle = True, random_state = 42)
     model_grid_cv = RandomizedSearchCV(pipeline_model, 
                                        param_distributions = params, 
                                        cv = cv, 
@@ -103,6 +140,14 @@ def optimize_and_train_model_RSCV(pipeline_model, xtrain, ytrain, params, scorin
                                        refit=True)
 
     model_grid_cv.fit(xtrain, ytrain)
+    
+    # Outer cross-validation
+    outer_cv = KFold(n_splits = 10, shuffle = True, random_state = 42)
+    compar_train_val_scores(model= model_grid_cv, 
+                            cv = outer_cv, 
+                            xtrain = xtrain, 
+                            ytrain = ytrain,
+                            scoring = scoring)
     
     best_model = model_grid_cv.best_estimator_
     best_params = model_grid_cv.best_params_
@@ -112,15 +157,16 @@ def optimize_and_train_model_RSCV(pipeline_model, xtrain, ytrain, params, scorin
 
 
 def best_model(model_name, model, cv,
-               xtrain, numeric_features, numeric_transformer, 
-               ytrain, params, scoring, xtest, ytest, 
-               oversampling_strategy = 0.1, undersampling_strategy = 0.5, balanced = False, Randomized = False):
+               xtrain, ytrain, 
+               preprocessor, params, 
+               scoring, xtest, ytest, 
+               oversampling_strategy = 0.1, undersampling_strategy = 0.5, balanced = False,
+               Randomized = False):
     
     if balanced == False:
         start = time.time()
         model = pipeline_model(model = model,
-                               numeric_features = numeric_features,
-                               numeric_transformer = numeric_transformer)
+                               preprocessor = preprocessor)
 
         if RandomizedSearchCV == False:
             # Optimisation via cross validation & GridSearch
@@ -146,7 +192,8 @@ def best_model(model_name, model, cv,
     else:
         
         start = time.time()
-        model = pipeline_model_balanced(model, numeric_features, numeric_transformer,
+        model = pipeline_model_balanced(model = model,
+                                        preprocessor = preprocessor,
                                         oversampling_strategy = oversampling_strategy, 
                                         undersampling_strategy = undersampling_strategy)
 
@@ -183,7 +230,7 @@ def score_metier(ytest, y_pred):
     (vn, fp, fn, vp) = confusion_matrix(ytest, y_pred).ravel()
     
     # Rappel avec action fp => à minimiser
-    score_metier = 10*fn + 2*fp
+    score_metier = 10*fn + fp
     
     return score_metier
 
