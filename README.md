@@ -122,12 +122,11 @@ CE3 Vous avez réalisé des graphiques lisibles (taille de texte suffisante, dé
 CE4 Vous avez réalisé des graphiques qui permettent de répondre à la problématique métier.
 
 CE5 Vous avez pris en compte le besoin des personnes en situation de handicap dans la réalisation des graphiques : le candidat doit avoir pris en compte au minimum les critères d'accessibilité du WCAG suivants (https://www.w3.org/Translations/WCAG21-fr/):
-
-    Critère de succès 1.1.1 Contenu non textuel
-    Critère de succès 1.4.1 Utilisation de la couleur
-    Critère de succès 1.4.3 Contraste (minimum)
-    Critère de succès 1.4.4 Redimensionnement du texte
-    Critère de succès 2.4.2 Titre de page
+- Critère de succès 1.1.1 Contenu non textuel
+- Critère de succès 1.4.1 Utilisation de la couleur
+- Critère de succès 1.4.3 Contraste (minimum)
+- Critère de succès 1.4.4 Redimensionnement du texte
+- Critère de succès 2.4.2 Titre de page
 
 CE6 Vous avez déployé le dashboard sur le web afin qu'il soit accessible pour d'autres utilisateurs sur leurs postes de travail.
 
@@ -177,8 +176,7 @@ CE4 Vous avez testé plusieurs algorithmes de façon cohérente, en partant des 
 ### Évaluer les performances des modèles d’apprentissage supervisé selon différents critères (scores, temps d'entraînement, etc.) en adaptant les paramètres afin de choisir le modèle le plus performant pour la problématique métier.
 
 CE1 Vous avez choisi une métrique adaptée pour évaluer la performance d'un algorithme (par exemple : R2 ou RMSE en régression, accuracy ou AUC en classification, etc.)
-
-    Il a mis en oeuvre un score métier pour évaluer les modèles et optimiser les hyperparamètres, qui prend en compte les spécificités du contexte, en particulier le fait que le coût d’un faux négatif et d’un faux positif sont sensiblement différents
+- Il a mis en oeuvre un score métier pour évaluer les modèles et optimiser les hyperparamètres, qui prend en compte les spécificités du contexte, en particulier le fait que le coût d’un faux négatif et d’un faux positif sont sensiblement différents
 
 CE2 Vous avez exploré d'autres indicateurs de performance que le score pour comprendre les résultats (coefficients des variables en fonction de la pénalisation, visualisation des erreurs en fonction des variables du modèle, temps de calcul...)
 
@@ -191,10 +189,9 @@ CE5 Vous avez pris en compte dans sa démarche de modélisation l'éventuel dés
 CE6 Vous avez optimisé les hyper-paramètres pertinents dans les différents algorithmes.
 
 CE7 Vous avez mis en place une validation croisée (via GridsearchCV, RandomizedSearchCV ou équivalent) afin d’optimiser les hyperparamètres et comparer les modèles. Dans le cadre de ce projet : 
-
-    Une cross-validation du dataset train est réalisée
-    Un premier test de différentes valeurs d’hyperparamètres est réalisé sur chaque algorithme testé, et affiné pour l’algorithme final choisi
-    Tout projet présentant un score AUC anormalement élevé, démontrant de l’overfitting dans le GrisSearchCV, sera invalidé (il ne devrait pas être supérieur au meilleur de la compétition Kaggle : 0.82)
+- Une cross-validation du dataset train est réalisée
+- Un premier test de différentes valeurs d’hyperparamètres est réalisé sur chaque algorithme testé, et affiné pour l’algorithme final choisi
+- Tout projet présentant un score AUC anormalement élevé, démontrant de l’overfitting dans le GrisSearchCV, sera invalidé (il ne devrait pas être supérieur au meilleur de la compétition Kaggle : 0.82)
 
 CE8 Vous avez présenté l'ensemble des résultats en allant des modèles les plus simples aux plus complexes. Il a justifié le choix final de l'algorithme et des hyperparamètres.
 
@@ -211,16 +208,13 @@ CE3 Vous avez formalisé des mesures et résultats de chaque expérimentation, a
 ### Définir et mettre en œuvre une stratégie de suivi de la performance d’un modèle en production et en assurer la maintenance afin de garantir dans le temps la production de prédictions performantes.
 
 CE1 Vous avez  défini une stratégie de suivi de la performance du modèle. Dans le cadre du projet : 
-
-    choix de réaliser a priori cette analyse sur le dataset disponible : analyse de data drift entre le dataset train et le dataset test
+- choix de réaliser a priori cette analyse sur le dataset disponible : analyse de data drift entre le dataset train et le dataset test
 
 CE2 Vous avez réalisé un système de stockage d’événements relatifs aux prédictions réalisées par l’API et une gestion d’alerte en cas de dégradation significative de la performance. Dans le cadre du projet : 
-
-    choix de réaliser a priori cette analyse analyse de data drift, via une simulation dans un notebook et création d’un tableau HTML d’analyse avec la librairie evidently
+- choix de réaliser a priori cette analyse analyse de data drift, via une simulation dans un notebook et création d’un tableau HTML d’analyse avec la librairie evidently
 
 CE3 Vous avez analysé la stabilité du modèle dans le temps et défini des actions d’amélioration de sa performance. Dans le cadre de ce projet : 
-
-    Analyse du tableau HTML evidently, et conclusion sur un éventuel data drift
+- Analyse du tableau HTML evidently, et conclusion sur un éventuel data drift
 
 
 ## Compétences évaluées
