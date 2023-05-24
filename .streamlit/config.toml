@@ -1,0 +1,7 @@
+# Streamlit theme
+
+[theme]
+base="light"
+primaryColor="#d0463c"
+backgroundColor="#ecebeb"
+secondaryBackgroundColor="#dcdfe0"
