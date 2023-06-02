@@ -41,7 +41,7 @@ st.sidebar.image(logo, width=200)
 
 col1, col2 = st.columns(2)
 
-col1.image("Home3.jpg")
+col1.image("Home.jpg")
 col1.markdown("<p class='image_credit-font'><em>Image credit: <br>Creator: User Noah Windler (@noahwindler) from "
               "Unsplash <br>License: Do whatever you want. https://unsplash.com/license <br>URL: "
               "https://unsplash.com/photos/gQI8BOaL69o</em></p>", unsafe_allow_html=True)
