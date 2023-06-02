@@ -4,12 +4,13 @@ import pandas as pd
 from PIL import Image
 from matplotlib import pyplot as plt
 import seaborn as sns
-import fct_model as model
 from urllib.error import URLError
 from pickle import load
 import plotly.graph_objects as go
 import shap
+from sklearn.preprocessing import LabelEncoder
 from streamlit_shap import st_shap
+import requests
 
 # --------------------------------------------------------------------------------
 # --------------------- Configuration de la page ---------------------------------
@@ -72,7 +73,7 @@ st.markdown("# Scoring client")
 
 @st.cache_data
 def upload_glossary():
-    glossary = pd.read_excel('data/Lexique.xlsx')
+    glossary = pd.read_excel('Lexique.xlsx')
     return glossary
 
 
@@ -102,12 +103,80 @@ st.sidebar.image(logo, width=200)
 # ---------------- Chargement des données et sélection ID-------------------------
 # --------------------------------------------------------------------------------
 
-@st.cache_data  # En cache pour n'être chargé qu'une fois
+def categories_encoder(df, nan_as_category=True):
+    """Fonction de preprocessing des variables catégorielles. Applique un
+    One Hot Encoder sur les variables catégorielles non binaires et un Label
+    Encoder pour les variables catégorielles binaires.
+
+    Arguments:
+    --------------------------------
+    df: dataframe: tableau en entrée, obligatoire
+    nan_as_category : bool, considère les valeurs manquantes comme une catégorie
+    à part entière. Vrai par défaut.
+
+    return:
+    --------------------------------
+    None
+    """
+
+    df_columns = list(df.columns)
+    # Colonnes pour OHE (modalités > 2)
+    categ_columns_ohe = [col for col in df.columns if df[col].dtype == 'object']
+    df_ohe = df[categ_columns_ohe]
+    categ_columns_ohe = [col for col in df_ohe.columns if len(list(df_ohe[col].unique())) > 2]
+    # Colonnes pour Label Encoder (modalités <= 2)
+    categ_columns_le = [col for col in df.columns if df[col].dtype == 'object']
+    df_le = df[categ_columns_le]
+    categ_columns_le = [col for col in df_le.columns if len(list(df_ohe[col].unique())) <= 2]
+
+    # Label encoder quand modalités <= 2
+    le = LabelEncoder()
+    for col in df[categ_columns_le]:
+        le.fit(df[col])
+        df[col] = le.transform(df[col])
+
+    # One Hot Encoder quand modalités > 2
+    df = pd.get_dummies(df, columns=categ_columns_ohe, dummy_na=nan_as_category)
+    new_columns = [c for c in df.columns if c not in df_columns] + categ_columns_le
+    return df, new_columns
+
+
+# Df en cache pour n'être chargé qu'une fois
+@st.cache_data
 def get_data(nrows):
-    df = model.data_app(nrows)
+    """Fonction qui récupère le fichier csv des données preprocessées, ne conserve que les
+    variables qui ont servi à la modélisation et applique un One Hot encoder sur les variables
+    catégorielles.
+
+    Arguments:
+    --------------------------------
+    nrows: int: nombre de données à charger. Si "None", toutes les données seront chargées
+
+    return:
+    --------------------------------
+    df: le tableau de données mis en forme afin qu'il puisse être utilisé lors des prédictions"""
+
+    # Lecture des données preprocessées
+    df = pd.read_csv('df.csv', nrows=nrows)
+    # Filtre du dataframe sur les features et la target
+    feat_lgb30 = ['SK_ID_CURR', 'TARGET', 'AGE', 'CODE_GENDER', 'NAME_EDUCATION_TYPE',
+                  'YEARS_EMPLOYED', 'YEARS_ID_PUBLISH', 'YEARS_LAST_PHONE_CHANGE', 'REGION_POPULATION_RELATIVE',
+                  'AMT_CREDIT', 'AMT_GOODS_PRICE', 'CREDIT_GOODS_PERC', 'CREDIT_DURATION', 'AMT_ANNUITY', 'DEBT_RATIO',
+                  'PAYMENT_RATE', 'EXT_SOURCE_2', 'PREV_YEARS_DECISION_MEAN', 'PREV_PAYMENT_RATE_MEAN',
+                  'INSTAL_DAYS_BEFORE_DUE_MEAN', 'INSTAL_PAYMENT_DIFF_MEAN', 'INSTAL_DAYS_PAST_DUE_MEAN',
+                  'POS_MONTHS_BALANCE_MEAN', 'POS_CNT_INSTALMENT_FUTURE_MEAN', 'POS_NB_CREDIT',
+                  'BURO_AMT_CREDIT_SUM_SUM', 'BURO_YEARS_CREDIT_ENDDATE_MAX', 'BURO_AMT_CREDIT_SUM_DEBT_SUM',
+                  'BURO_YEARS_CREDIT_ENDDATE_MEAN', 'BURO_AMT_CREDIT_SUM_MEAN', 'BURO_CREDIT_ACTIVE_Active_SUM',
+                  'BURO_AMT_CREDIT_SUM_DEBT_MEAN']
+    df = df[feat_lgb30]
+    df = df[df['NAME_EDUCATION_TYPE'] == 'Lower Secondary & Secondary']
+    # OneHotEncoder sur nos variables catégorielles
+    df, categ_feat = categories_encoder(df, nan_as_category=False)
+    df.rename(columns={'NAME_EDUCATION_TYPE': 'NAME_EDUCATION_TYPE_Lower Secondary & Secondary'}, inplace=True)
     df['SK_ID_CURR'] = df['SK_ID_CURR'].astype(str)
     df = df.reset_index(drop=True)
     df = df.drop(['TARGET'], axis=1)
+
     return df
 
 
@@ -128,9 +197,6 @@ try:
 
     else:
 
-        # Partager la variable entre les runs
-        #if 'select_id' not in st.session_state:
-        #    st.session_state['select_id'] = loan_ID
         # Filtre sur l'ID du prêt
         ID_row = df[df['SK_ID_CURR'] == loan_ID]
         ID_row_index = ID_row.index
@@ -143,11 +209,15 @@ try:
         # ---------------- Calcul probabilité de faillite du client-----------------------
         # --------------------------------------------------------------------------------
 
+        # Lors du click sur le bouton, appel à l'API de prédiction
         if st.button('Lancer la prédiction'):
+            #res = requests.get(url="http://127.0.0.1:8000/get_proba", data=id_client)
+            res = requests.get(f"http://127.0.0.1:8000/get_proba/{loan_ID}")
+            response = res.json()[0]
 
             # Chargement du modèle, du scaler et de l'explainer
             credit_score_model = load(open('credit_score_model_SHAP.sav', 'rb'))
-            scaler = load(open('credit_score_model_scaler.sav', 'rb'))
+            # scaler = load(open('credit_score_model_scaler.sav', 'rb'))
             with open('credit_score_model_SHAP_explainer.sav', 'rb') as f:
                 explainer = dill.load(f)
 
@@ -163,16 +233,8 @@ try:
                           'BURO_YEARS_CREDIT_ENDDATE_MAX', 'NAME_EDUCATION_TYPE_Lower Secondary & Secondary',
                           'PREV_PAYMENT_RATE_MEAN']
 
-            # Standardisation
-            ID_row_scaled = scaler.transform(ID_row.drop(['SK_ID_CURR'], axis=1))
-            ID_row_scaled_df = pd.DataFrame(ID_row_scaled, columns=feat_lgb30)
-
             # Index du prêt choisi
             idx = ID_row.index[0]
-
-            # Prédiction
-            prediction = credit_score_model.predict(ID_row_scaled)
-            proba = credit_score_model.predict_proba(ID_row_scaled)[:, 1]
 
             # Séparation page en 2 colonnes
             col1, col2 = st.columns(2)
@@ -182,10 +244,10 @@ try:
             # --------------------------------------------------------------------------------
 
             # Si la probabilité de défaillance est supérieure au seuil de 0.47, classement défaillant
-            if proba > 0.47:
+            if response > 0.47:
                 # Jauge
                 gauge = go.Figure(go.Indicator(mode="gauge+number+delta",
-                                               value=float(proba) * 100,
+                                               value=float(response) * 100,
                                                domain={'x': [0, 1], 'y': [0, 1]},
                                                delta={'reference': 47, 'increasing': {'color': "red"}},
                                                gauge={'axis': {'range': [None, 100]},
@@ -216,20 +278,15 @@ try:
                               "prédiction soit capable de détecter efficacement les vrais positifs (clients "
                               "défaillants prédits défaillants) mais sans trop augmenter les faux positifs (clients "
                               "non défaillants) prédits défaillants.</p>".format(id=loan_ID,
-                                                                                 prob=round(float(proba) * 100, 2)),
+                                                                                 prob=round(float(response) * 100, 2)),
                               unsafe_allow_html=True)
 
             # Si la probabilité de défaillance est inférieure au seuil de 0.47, classement non défaillant
             else:
 
-                # Partager la variable entre les runs
-                #if 'classement' not in st.session_state:
-                #   st.session_state['classement'] = 'Non défaillants'
-                #st.session_state['classement'] = 'Non défaillants'
-
                 # Jauge
                 gauge = go.Figure(go.Indicator(mode="gauge+number+delta",
-                                               value=float(proba) * 100,
+                                               value=float(response) * 100,
                                                domain={'x': [0, 1], 'y': [0, 1]},
                                                delta={'reference': 47, 'decreasing': {'color': "#116813"}},
                                                gauge={'axis': {'range': [None, 100]},
@@ -259,13 +316,13 @@ try:
                               "47%. <br><br>Ce seuil a été défini pour que le modèle de prédiction soit capable de "
                               "détecter efficacement les vrais positifs (clients défaillants prédits défaillants) "
                               "mais sans trop augmenter les faux positifs (clients non défaillants) prédits "
-                              "défaillants.</p>".format(id=loan_ID, prob=round(float(proba) * 100, 2)),
+                              "défaillants.</p>".format(id=loan_ID, prob=round(float(response) * 100, 2)),
                               unsafe_allow_html=True)
 
             col2.markdown("<p class='text-font'> <em>❗ Attention, il s'agit d'une proposition de classement "
-                        "automatique basée sur le risque de défaillance du client mais qui n'exclut en rien l'étude "
-                        "attentive du dossier par le conseiller clientèle</em>.</p>",
-                        unsafe_allow_html=True)
+                          "automatique basée sur le risque de défaillance du client mais qui n'exclut en rien l'étude "
+                          "attentive du dossier par le conseiller clientèle</em>.</p>",
+                          unsafe_allow_html=True)
 
             st.divider()
 
