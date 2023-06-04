@@ -143,7 +143,7 @@ def preprocess_app_train():
     # Chargement du dataset
 
     global_path = __file__
-    data_path = Path(str(global_path) + '/../data/application_train.csv')
+    data_path = Path(str(global_path) + '/../../data/application_train.csv')
     app_train = pd.read_csv(data_path, sep=',', encoding='utf-8')
 
     # Traitement des données manquantes
@@ -444,7 +444,7 @@ def preprocess_app_test():
     # Chargement du dataset
 
     global_path = __file__
-    data_path = Path(str(global_path) + '/../data/application_test.csv')
+    data_path = Path(str(global_path) + '/../../data/application_test.csv')
     app_test = pd.read_csv(data_path, sep=',', encoding='utf-8')
 
     # Traitement des données manquantes
@@ -745,9 +745,9 @@ def preprocess_bureau_balance():
     # Chargement des datasets
 
     global_path = __file__
-    data_path_bureau = Path(str(global_path) + '/../data/bureau.csv')
+    data_path_bureau = Path(str(global_path) + '/../../data/bureau.csv')
     bureau = pd.read_csv(data_path_bureau, sep=',', encoding='utf-8')
-    data_path_bureau_balance = Path(str(global_path) + '/../data/bureau_balance.csv')
+    data_path_bureau_balance = Path(str(global_path) + '/../../data/bureau_balance.csv')
     bureau_balance = pd.read_csv(data_path_bureau_balance, sep=',', encoding='utf-8')
 
     # Preprocessing bureau_balance
@@ -895,7 +895,7 @@ def preprocess_previous_app():
     # Chargement du dataset
 
     global_path = __file__
-    data_path = Path(str(global_path) + '/../data/previous_application.csv')
+    data_path = Path(str(global_path) + '/../../data/previous_application.csv')
     previous_app = pd.read_csv(data_path, sep=',', encoding='utf-8')
 
     # Traitement des données manquantes
@@ -1009,7 +1009,7 @@ def preprocess_POS_CASH_balance():
     # Chargement du dataset
 
     global_path = __file__
-    data_path = Path(str(global_path) + '/../data/POS_CASH_balance.csv')
+    data_path = Path(str(global_path) + '/../../data/POS_CASH_balance.csv')
     pos_cash = pd.read_csv(data_path, sep=',', encoding='utf-8')
 
     # Traitement des données manquantes (médiane)
@@ -1064,7 +1064,7 @@ def preprocess_installments_payments():
     # Chargement du dataset
 
     global_path = __file__
-    data_path = Path(str(global_path) + '/../data/installments_payments.csv')
+    data_path = Path(str(global_path) + '/../../data/installments_payments.csv')
     install_pay = pd.read_csv(data_path, sep=',', encoding='utf-8')
 
     # Traitement des données manquantes (médiane)
@@ -1121,7 +1121,7 @@ def preprocess_credit_card_balance():
     # Chargement du dataset
 
     global_path = __file__
-    data_path = Path(str(global_path) + '/../data/credit_card_balance.csv')
+    data_path = Path(str(global_path) + '/../../data/credit_card_balance.csv')
     cc_balance = pd.read_csv(data_path, sep=',', encoding='utf-8')
 
     # Traitement des données manquantes (médiane)
@@ -1294,9 +1294,6 @@ def preprocessing_no_NaN_app_test():
         gc.collect()
         df.index = df.index.map(str)
     return df
-
-
-
 
 
 if __name__ == '__main__':
