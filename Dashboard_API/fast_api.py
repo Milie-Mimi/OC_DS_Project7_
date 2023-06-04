@@ -94,5 +94,6 @@ def get_proba(loan_ID):
     proba = credit_score_model.predict_proba(ID_row_scaled)[:, 1]
     return proba.tolist()
 
+# cd Dashboard_API
 # uvicorn fast_api:app --reload  # pour récupérer la réponse de l'API
 # http://127.0.0.1:8000/docs  # pour tester l'API
