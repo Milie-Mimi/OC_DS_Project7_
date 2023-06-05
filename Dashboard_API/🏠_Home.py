@@ -64,4 +64,5 @@ col2.markdown("<p class='text-font'>Prêt à dépenser propose des crédits à l
               "</p>",
               unsafe_allow_html=True)
 
+# cd Dashboard_API
 # streamlit run 🏠_Home.py

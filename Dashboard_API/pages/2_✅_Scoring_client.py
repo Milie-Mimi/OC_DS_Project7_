@@ -12,6 +12,8 @@ from sklearn.preprocessing import LabelEncoder
 from streamlit_shap import st_shap
 import requests
 
+host = "https://git.heroku.com"
+
 # --------------------------------------------------------------------------------
 # --------------------- Configuration de la page ---------------------------------
 # --------------------------------------------------------------------------------
@@ -211,14 +213,18 @@ try:
 
         # Lors du click sur le bouton, appel à l'API de prédiction
         if st.button('Lancer la prédiction'):
-            #res = requests.get(url="http://127.0.0.1:8000/get_proba", data=id_client)
-            res = requests.get(f"http://127.0.0.1:8000/get_proba/{loan_ID}")
+            # res = requests.get(url="http://127.0.0.1:8000/get_proba", data=id_client)
+            res = requests.get(host + f"/get_proba/{loan_ID}")
+
             response = res.json()[0]
 
             # Chargement du modèle, du scaler et de l'explainer
-            credit_score_model = load(open('credit_score_model_SHAP.sav', 'rb'))
+            credit_score_model = load(open('C:/Users/milie/01_PYTHON/4. '
+                                           'OPEN_CLASSROOMS/07_PROJET_7/Dashboard_API/credit_score_model_SHAP.sav',
+                                           'rb'))
             # scaler = load(open('credit_score_model_scaler.sav', 'rb'))
-            with open('credit_score_model_SHAP_explainer.sav', 'rb') as f:
+            with open('C:/Users/milie/01_PYTHON/4. '
+                      'OPEN_CLASSROOMS/07_PROJET_7/Dashboard_API/credit_score_model_SHAP_explainer.sav', 'rb') as f:
                 explainer = dill.load(f)
 
             # Liste des features
