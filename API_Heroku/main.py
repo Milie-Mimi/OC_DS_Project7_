@@ -60,10 +60,41 @@ class User_input(BaseModel):
 app = FastAPI()
 
 
+@app.get("/get_glossary/")
+def get_glossary():
+    glossary = pd.read_excel('Lexique.xlsx')
+    return glossary.to_json(orient='index')
+
+
+@app.get("/get_loans/")
+def get_loans():
+    # Lecture des données preprocessées
+    df = pd.read_csv('df_light.csv', nrows=None)
+    # Définition des features et de la target
+    feat_lgb30 = ['SK_ID_CURR', 'TARGET', 'AGE', 'CODE_GENDER', 'NAME_EDUCATION_TYPE',
+                  'YEARS_EMPLOYED', 'YEARS_ID_PUBLISH', 'YEARS_LAST_PHONE_CHANGE', 'REGION_POPULATION_RELATIVE',
+                  'AMT_CREDIT', 'AMT_GOODS_PRICE', 'CREDIT_GOODS_PERC', 'CREDIT_DURATION', 'AMT_ANNUITY', 'DEBT_RATIO',
+                  'PAYMENT_RATE', 'EXT_SOURCE_2', 'PREV_YEARS_DECISION_MEAN', 'PREV_PAYMENT_RATE_MEAN',
+                  'INSTAL_DAYS_BEFORE_DUE_MEAN', 'INSTAL_PAYMENT_DIFF_MEAN', 'INSTAL_DAYS_PAST_DUE_MEAN',
+                  'POS_MONTHS_BALANCE_MEAN', 'POS_CNT_INSTALMENT_FUTURE_MEAN', 'POS_NB_CREDIT',
+                  'BURO_AMT_CREDIT_SUM_SUM', 'BURO_YEARS_CREDIT_ENDDATE_MAX', 'BURO_AMT_CREDIT_SUM_DEBT_SUM',
+                  'BURO_YEARS_CREDIT_ENDDATE_MEAN', 'BURO_AMT_CREDIT_SUM_MEAN', 'BURO_CREDIT_ACTIVE_Active_SUM',
+                  'BURO_AMT_CREDIT_SUM_DEBT_MEAN']
+    df = df[feat_lgb30]
+    df = df[df['NAME_EDUCATION_TYPE'] == 'Lower Secondary & Secondary']
+    # OneHotEncoder sur nos variables catégorielles
+    df, categ_feat = categories_encoder(df, nan_as_category=False)
+    df.rename(columns={'NAME_EDUCATION_TYPE': 'NAME_EDUCATION_TYPE_Lower Secondary & Secondary'}, inplace=True)
+    df['SK_ID_CURR'] = df['SK_ID_CURR'].astype(str)
+    df = df.reset_index(drop=True)
+    df.index = df.index.map(str)
+    return df.to_json(orient='index')
+
+
 @app.get("/get_proba/{loan_ID}")
 def get_proba(loan_ID):
     # Lecture des données preprocessées
-    df = pd.read_csv('df.csv', nrows=None)
+    df = pd.read_csv('df_light.csv', nrows=None)
     # Définition des features et de la target
     feat_lgb30 = ['SK_ID_CURR', 'TARGET', 'CREDIT_DURATION', 'EXT_SOURCE_2', 'INSTAL_DAYS_PAST_DUE_MEAN',
                   'PAYMENT_RATE', 'POS_CNT_INSTALMENT_FUTURE_MEAN', 'CREDIT_GOODS_PERC',
@@ -95,5 +126,5 @@ def get_proba(loan_ID):
     return proba.tolist()
 
 # cd Dashboard_API
-# uvicorn fast_api:app --reload  # pour récupérer la réponse de l'API
+# uvicorn fast_api:app --reload  # pour récupérer la réponse de l'API (local)
 # http://127.0.0.1:8000/docs  # pour tester l'API
