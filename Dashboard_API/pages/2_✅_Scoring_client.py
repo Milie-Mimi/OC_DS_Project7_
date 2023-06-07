@@ -1,12 +1,10 @@
 import dill
-import joblib
 import streamlit as st
 import pandas as pd
 from PIL import Image
 from matplotlib import pyplot as plt
 import seaborn as sns
 from urllib.error import URLError
-from pickle import load
 import plotly.graph_objects as go
 import shap
 from streamlit_shap import st_shap
@@ -107,43 +105,6 @@ st.sidebar.image(logo, width=200)
 # ---------------- Chargement des données et sélection ID-------------------------
 # --------------------------------------------------------------------------------
 
-#def categories_encoder(df, nan_as_category=True):
-#    """Fonction de preprocessing des variables catégorielles. Applique un
-#    One Hot Encoder sur les variables catégorielles non binaires et un Label
-#    Encoder pour les variables catégorielles binaires.
-#
-#    Arguments:
-#    --------------------------------
-#    df: dataframe: tableau en entrée, obligatoire
-#    nan_as_category : bool, considère les valeurs manquantes comme une catégorie
-#    à part entière. Vrai par défaut.
-#
-#    return:
-#    --------------------------------
-#    None
-#    """
-
-#    df_columns = list(df.columns)
-#    # Colonnes pour OHE (modalités > 2)
-#    categ_columns_ohe = [col for col in df.columns if df[col].dtype == 'object']
-#    df_ohe = df[categ_columns_ohe]
-#    categ_columns_ohe = [col for col in df_ohe.columns if len(list(df_ohe[col].unique())) > 2]
-#    # Colonnes pour Label Encoder (modalités <= 2)
-#    categ_columns_le = [col for col in df.columns if df[col].dtype == 'object']
-#    df_le = df[categ_columns_le]
-#    categ_columns_le = [col for col in df_le.columns if len(list(df_ohe[col].unique())) <= 2]
-
-    # Label encoder quand modalités <= 2
-#    le = LabelEncoder()
-#    for col in df[categ_columns_le]:
-#        le.fit(df[col])
-#        df[col] = le.transform(df[col])
-#
-#    # One Hot Encoder quand modalités > 2
-#    df = pd.get_dummies(df, columns=categ_columns_ohe, dummy_na=nan_as_category)
-#    new_columns = [c for c in df.columns if c not in df_columns] + categ_columns_le
-#    return df, new_columns
-
 
 # Df en cache pour n'être chargé qu'une fois
 @st.cache_data
@@ -154,44 +115,6 @@ def get_data():
     df['SK_ID_CURR'] = df['SK_ID_CURR'].astype(str)
     df = df.drop(['TARGET'], axis=1)
     return df
-
-
-
-#def get_data(nrows):
-#    """Fonction qui récupère le fichier csv des données preprocessées, ne conserve que les
-#    variables qui ont servi à la modélisation et applique un One Hot encoder sur les variables
-#    catégorielles.
-#
-#    Arguments:
-#    --------------------------------
-#    nrows: int: nombre de données à charger. Si "None", toutes les données seront chargées
-#
-#    return:
-#    --------------------------------
-#    df: le tableau de données mis en forme afin qu'il puisse être utilisé lors des prédictions"""
-#
-#   # Lecture des données preprocessées
-#    df = pd.read_csv('df_light.csv', nrows=nrows)
-#    # Filtre du dataframe sur les features et la target
-#    feat_lgb30 = ['SK_ID_CURR', 'TARGET', 'AGE', 'CODE_GENDER', 'NAME_EDUCATION_TYPE',
-#                  'YEARS_EMPLOYED', 'YEARS_ID_PUBLISH', 'YEARS_LAST_PHONE_CHANGE', 'REGION_POPULATION_RELATIVE',
-#                  'AMT_CREDIT', 'AMT_GOODS_PRICE', 'CREDIT_GOODS_PERC', 'CREDIT_DURATION', 'AMT_ANNUITY', 'DEBT_RATIO',
-#                  'PAYMENT_RATE', 'EXT_SOURCE_2', 'PREV_YEARS_DECISION_MEAN', 'PREV_PAYMENT_RATE_MEAN',
-#                  'INSTAL_DAYS_BEFORE_DUE_MEAN', 'INSTAL_PAYMENT_DIFF_MEAN', 'INSTAL_DAYS_PAST_DUE_MEAN',
-#                  'POS_MONTHS_BALANCE_MEAN', 'POS_CNT_INSTALMENT_FUTURE_MEAN', 'POS_NB_CREDIT',
-#                  'BURO_AMT_CREDIT_SUM_SUM', 'BURO_YEARS_CREDIT_ENDDATE_MAX', 'BURO_AMT_CREDIT_SUM_DEBT_SUM',
-#                  'BURO_YEARS_CREDIT_ENDDATE_MEAN', 'BURO_AMT_CREDIT_SUM_MEAN', 'BURO_CREDIT_ACTIVE_Active_SUM',
-#                  'BURO_AMT_CREDIT_SUM_DEBT_MEAN']
-#    df = df[feat_lgb30]
-#    df = df[df['NAME_EDUCATION_TYPE'] == 'Lower Secondary & Secondary']
-#    # OneHotEncoder sur nos variables catégorielles
-#    df, categ_feat = categories_encoder(df, nan_as_category=False)
-#    df.rename(columns={'NAME_EDUCATION_TYPE': 'NAME_EDUCATION_TYPE_Lower Secondary & Secondary'}, inplace=True)
-#    df['SK_ID_CURR'] = df['SK_ID_CURR'].astype(str)
-#    df = df.reset_index(drop=True)
-#    df = df.drop(['TARGET'], axis=1)
-#
-#    return df
 
 
 try:
@@ -227,32 +150,19 @@ try:
         if st.button('Lancer la prédiction'):
             # res = requests.get(url="http://127.0.0.1:8000/get_proba", data=id_client)
             res = requests.get(host + f"/get_proba/{loan_ID}")
-            #st.text(res.text)
-            #response = res[0]
             response = res.json()[0]
 
-            # Chargement du modèle et de l'explainer
-            #credit_score_model = load(open('C:/Users/milie/01_PYTHON/4. '
-            #                               'OPEN_CLASSROOMS/07_PROJET_7/Dashboard_API/credit_score_model_SHAP.sav',
-            #                               'rb'))
-            credit_score_model = load(open('credit_score_model_SHAP.sav', 'rb'))
-            # scaler = load(open('credit_score_model_scaler.sav', 'rb'))
-            #with open('C:/Users/milie/01_PYTHON/4. '
-            #          'OPEN_CLASSROOMS/07_PROJET_7/Dashboard_API/credit_score_model_SHAP_explainer.sav', 'rb') as f:
-            #    explainer = dill.load(f)
-            explainer = load(open('credit_score_model_SHAP_explainer.sav', 'rb'))
-
             # Liste des features
-            feat_lgb30 = ['CREDIT_DURATION', 'EXT_SOURCE_2', 'INSTAL_DAYS_PAST_DUE_MEAN',
-                          'PAYMENT_RATE', 'POS_CNT_INSTALMENT_FUTURE_MEAN', 'CREDIT_GOODS_PERC',
-                          'AGE', 'POS_NB_CREDIT', 'BURO_CREDIT_ACTIVE_Active_SUM', 'BURO_AMT_CREDIT_SUM_DEBT_MEAN',
-                          'YEARS_EMPLOYED', 'YEARS_ID_PUBLISH', 'INSTAL_PAYMENT_DIFF_MEAN', 'BURO_AMT_CREDIT_SUM_MEAN',
-                          'AMT_ANNUITY', 'AMT_GOODS_PRICE', 'BURO_YEARS_CREDIT_ENDDATE_MEAN', 'AMT_CREDIT',
-                          'YEARS_LAST_PHONE_CHANGE', 'POS_MONTHS_BALANCE_MEAN', 'INSTAL_DAYS_BEFORE_DUE_MEAN',
-                          'BURO_AMT_CREDIT_SUM_DEBT_SUM', 'CODE_GENDER', 'PREV_YEARS_DECISION_MEAN',
-                          'REGION_POPULATION_RELATIVE', 'DEBT_RATIO', 'BURO_AMT_CREDIT_SUM_SUM',
-                          'BURO_YEARS_CREDIT_ENDDATE_MAX', 'NAME_EDUCATION_TYPE_Lower Secondary & Secondary',
-                          'PREV_PAYMENT_RATE_MEAN']
+            #feat_lgb30 = ['CREDIT_DURATION', 'EXT_SOURCE_2', 'INSTAL_DAYS_PAST_DUE_MEAN',
+            #              'PAYMENT_RATE', 'POS_CNT_INSTALMENT_FUTURE_MEAN', 'CREDIT_GOODS_PERC',
+            #              'AGE', 'POS_NB_CREDIT', 'BURO_CREDIT_ACTIVE_Active_SUM', 'BURO_AMT_CREDIT_SUM_DEBT_MEAN',
+            #              'YEARS_EMPLOYED', 'YEARS_ID_PUBLISH', 'INSTAL_PAYMENT_DIFF_MEAN', 'BURO_AMT_CREDIT_SUM_MEAN',
+            #              'AMT_ANNUITY', 'AMT_GOODS_PRICE', 'BURO_YEARS_CREDIT_ENDDATE_MEAN', 'AMT_CREDIT',
+            #              'YEARS_LAST_PHONE_CHANGE', 'POS_MONTHS_BALANCE_MEAN', 'INSTAL_DAYS_BEFORE_DUE_MEAN',
+            #              'BURO_AMT_CREDIT_SUM_DEBT_SUM', 'CODE_GENDER', 'PREV_YEARS_DECISION_MEAN',
+            #              'REGION_POPULATION_RELATIVE', 'DEBT_RATIO', 'BURO_AMT_CREDIT_SUM_SUM',
+            #              'BURO_YEARS_CREDIT_ENDDATE_MAX', 'NAME_EDUCATION_TYPE_Lower Secondary & Secondary',
+            #              'PREV_PAYMENT_RATE_MEAN']
 
             # Index du prêt choisi
             idx = ID_row.index[0]
@@ -362,11 +272,9 @@ try:
                         "modèle.</p>",
                         unsafe_allow_html=True)
 
-            feat_imp_credit_score_model = credit_score_model.feature_importances_
-            dic_credit_score_model = {'Features': feat_lgb30,
-                                      'Score': feat_imp_credit_score_model}
-            df_credit_score_model = pd.DataFrame(data=dic_credit_score_model)
-            df_credit_score_model = df_credit_score_model.sort_values(by='Score', ascending=False)
+            res = requests.get(host + f"/get_feature_importance/")
+            response = res.json()
+            df_credit_score_model = pd.read_json(response, orient='index')
 
             fig = plt.figure(figsize=(15, 12))
             plt.title('Variables du modèle et leur importance', fontsize=18)
@@ -381,6 +289,10 @@ try:
             # --------------------------------------------------------------------------------
             # ------------------------ Features importance locales ---------------------------
             # --------------------------------------------------------------------------------
+
+            # Chargement l'explainer
+            with open('credit_score_model_SHAP_explainer.sav', 'rb') as f:
+                explainer = dill.load(f)
 
             st.write("### Compréhension du score de l'ID sélectionné")
 
