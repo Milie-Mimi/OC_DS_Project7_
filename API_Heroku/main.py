@@ -125,6 +125,32 @@ def get_proba(loan_ID):
     proba = credit_score_model.predict_proba(ID_row_scaled)[:, 1]
     return proba.tolist()
 
-# cd Dashboard_API
-# uvicorn fast_api:app --reload  # pour récupérer la réponse de l'API (local)
+
+@app.get("/get_feature_importance/")
+def get_feature_importance():
+    credit_score_model = load(open('credit_score_model_SHAP.sav', 'rb'))
+    feat_imp_credit_score_model = credit_score_model.feature_importances_
+    dic_credit_score_model = {'Features': ['CREDIT_DURATION', 'EXT_SOURCE_2', 'INSTAL_DAYS_PAST_DUE_MEAN',
+                                           'PAYMENT_RATE', 'POS_CNT_INSTALMENT_FUTURE_MEAN', 'CREDIT_GOODS_PERC',
+                                           'AGE', 'POS_NB_CREDIT', 'BURO_CREDIT_ACTIVE_Active_SUM',
+                                           'BURO_AMT_CREDIT_SUM_DEBT_MEAN',
+                                           'YEARS_EMPLOYED', 'YEARS_ID_PUBLISH', 'INSTAL_PAYMENT_DIFF_MEAN',
+                                           'BURO_AMT_CREDIT_SUM_MEAN',
+                                           'AMT_ANNUITY', 'AMT_GOODS_PRICE', 'BURO_YEARS_CREDIT_ENDDATE_MEAN',
+                                           'AMT_CREDIT',
+                                           'YEARS_LAST_PHONE_CHANGE', 'POS_MONTHS_BALANCE_MEAN',
+                                           'INSTAL_DAYS_BEFORE_DUE_MEAN',
+                                           'BURO_AMT_CREDIT_SUM_DEBT_SUM', 'CODE_GENDER', 'PREV_YEARS_DECISION_MEAN',
+                                           'REGION_POPULATION_RELATIVE', 'DEBT_RATIO', 'BURO_AMT_CREDIT_SUM_SUM',
+                                           'BURO_YEARS_CREDIT_ENDDATE_MAX',
+                                           'NAME_EDUCATION_TYPE_Lower Secondary & Secondary',
+                                           'PREV_PAYMENT_RATE_MEAN'],
+                              'Score': feat_imp_credit_score_model}
+    df_credit_score_model = pd.DataFrame(data=dic_credit_score_model)
+    df_credit_score_model = df_credit_score_model.sort_values(by='Score', ascending=False)
+    return df_credit_score_model.to_json(orient='index')
+
+
+# cd API_Heroku
+# uvicorn main:app --reload  # pour récupérer la réponse de l'API (local)
 # http://127.0.0.1:8000/docs  # pour tester l'API
