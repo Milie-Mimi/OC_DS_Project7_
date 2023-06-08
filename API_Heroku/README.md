@@ -23,3 +23,5 @@ données à charger dans le dashboard Streamlit.
 
 **Commandes pour démarrer l'application sur Heroku**
 - Procfile → fichier qui spécifie les commandes exécutées par l'application Heroku au démarrage
+
+Lien API: https://api-scoring-app.herokuapp.com/docs
