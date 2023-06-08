@@ -4,7 +4,8 @@
 
 ![Streamlit](streamlit_logo.PNG)
 
-Ce dossier contient les fichiers ayant permis la réalisation du dashboard sur Streamlit (partie front-end).
+Ce dossier contient les fichiers ayant permis la réalisation du dashboard sur Streamlit (partie front-end) et son 
+déploiement sur Heroku.
 
 **Pages du dashboard**
 - 🏠_Home.py
@@ -29,3 +30,5 @@ Ce dossier contient les fichiers ayant permis la réalisation du dashboard sur S
 **Commandes pour démarrer l'application sur Heroku**
 - setup.sh
 - Procfile => fichier qui spécifie les commandes exécutées par l'application Heroku au démarrage
+
+Lien Dashboard: https://vast-mesa-70281.herokuapp.com/
