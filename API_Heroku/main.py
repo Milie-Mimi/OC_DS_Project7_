@@ -62,12 +62,29 @@ app = FastAPI()
 
 @app.get("/get_glossary/")
 def get_glossary():
+    """Fonction qui retourne la définition des variables au format.
+
+    Arguments:
+    --------------------------------
+
+    return:
+    --------------------------------
+    glossary:json: Lexique"""
     glossary = pd.read_excel('Lexique.xlsx')
     return glossary.to_json(orient='index')
 
 
 @app.get("/get_loans/")
 def get_loans():
+    """Fonction qui retourne la liste des demandes de prêts.
+
+    Arguments:
+    --------------------------------
+
+    return:
+    --------------------------------
+    df:json: tableau des demandes de prêts"""
+
     # Lecture des données preprocessées
     df = pd.read_csv('df_light.csv', nrows=None)
     # Définition des features et de la target
@@ -93,6 +110,20 @@ def get_loans():
 
 @app.get("/get_proba/{loan_ID}")
 def get_proba(loan_ID):
+    """Fonction qui charge la liste des demandes de prêts, effectue des
+    transformations sur les features pour qu'elles correspondent à celles
+    en entrée du modèle, filtre sur l'ID du prêt sélectionné par l'utilisateur
+    dans le dashboard, standardise les données puis effectue la prédiction
+    en appliquant le LightGBM.
+
+    Arguments:
+    --------------------------------
+    loan_ID: str : ID du prêt
+
+    return:
+    --------------------------------
+    proba: float: probabilité de faillite du client"""
+
     # Lecture des données preprocessées
     df = pd.read_csv('df_light.csv', nrows=None)
     # Définition des features et de la target
@@ -128,6 +159,16 @@ def get_proba(loan_ID):
 
 @app.get("/get_feature_importance/")
 def get_feature_importance():
+    """Fonction qui retourne les scores d'importance
+    des variables du modèle.
+
+    Arguments:
+    --------------------------------
+
+    return:
+    --------------------------------
+    df_credit_score_model: json: tableau des features et score associé"""
+
     credit_score_model = load(open('credit_score_model_SHAP.sav', 'rb'))
     feat_imp_credit_score_model = credit_score_model.feature_importances_
     dic_credit_score_model = {'Features': ['CREDIT_DURATION', 'EXT_SOURCE_2', 'INSTAL_DAYS_PAST_DUE_MEAN',
