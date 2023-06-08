@@ -2,6 +2,8 @@
 
 ## Découpage du dossier "API_Heroku"
 
+![Fast_API](img_fast_API.PNG)
+
 Ce dossier contient les fichiers ayant permis la réalisation de l'API via Fast_API (partie back_end) et les différentes 
 données à charger dans le dashboard Streamlit.
 
