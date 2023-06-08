@@ -39,18 +39,39 @@ st.title("Liste des demandes de prêt")
 
 @st.cache_data
 def upload_glossary():
+    """Fonction qui appelle l'API et retourne la définition des variables au format
+    dataframe.
+
+    Arguments:
+    --------------------------------
+
+    return:
+    --------------------------------
+    res:dataframe: Lexique"""
+
     res = requests.get(host + f"/get_glossary/")
-    response = res.json()
-    glossary = pd.read_json(response, orient='index')
-    return glossary
+    res = res.json()
+    res = pd.read_json(res, orient='index')
+    return res
 
 
 @st.cache_data
 def get_data():
+    """Fonction qui appelle l'API et retourne la liste des demandes de
+    prêts au format dataframe.
+
+    Arguments:
+    --------------------------------
+
+    return:
+    --------------------------------
+    df:dataframe: tableau des demandes de prêts"""
+
     res = requests.get(host + f"/get_loans/")
     response = res.json()
     df = pd.read_json(response, orient='index')
     df['SK_ID_CURR'] = df['SK_ID_CURR'].astype(str)
+    df = df.drop('TARGET', axis=1)
     return df
 
 

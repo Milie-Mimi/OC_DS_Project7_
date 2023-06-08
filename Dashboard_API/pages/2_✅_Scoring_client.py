@@ -1,4 +1,4 @@
-import dill
+from pickle import load
 import streamlit as st
 import pandas as pd
 from PIL import Image
@@ -73,10 +73,20 @@ st.markdown("# Scoring client")
 
 @st.cache_data
 def upload_glossary():
+    """Fonction qui appelle l'API et retourne la définition des variables au format
+    dataframe.
+
+    Arguments:
+    --------------------------------
+
+    return:
+    --------------------------------
+    res:dataframe: Lexique"""
+
     res = requests.get(host + f"/get_glossary/")
-    response = res.json()
-    glossary = pd.read_json(response, orient='index')
-    return glossary
+    res = res.json()
+    res = pd.read_json(res, orient='index')
+    return res
 
 
 checkbox_scoring = st.sidebar.checkbox("Afficher la définition")
@@ -109,6 +119,16 @@ st.sidebar.image(logo, width=200)
 # Df en cache pour n'être chargé qu'une fois
 @st.cache_data
 def get_data():
+    """Fonction qui appelle l'API et retourne la liste des demandes de
+    prêts au format dataframe.
+
+    Arguments:
+    --------------------------------
+
+    return:
+    --------------------------------
+    df:dataframe: tableau des demandes de prêts"""
+
     res = requests.get(host + f"/get_loans/")
     response = res.json()
     df = pd.read_json(response, orient='index')
@@ -151,18 +171,6 @@ try:
             # res = requests.get(url="http://127.0.0.1:8000/get_proba", data=id_client)
             res = requests.get(host + f"/get_proba/{loan_ID}")
             response = res.json()[0]
-
-            # Liste des features
-            #feat_lgb30 = ['CREDIT_DURATION', 'EXT_SOURCE_2', 'INSTAL_DAYS_PAST_DUE_MEAN',
-            #              'PAYMENT_RATE', 'POS_CNT_INSTALMENT_FUTURE_MEAN', 'CREDIT_GOODS_PERC',
-            #              'AGE', 'POS_NB_CREDIT', 'BURO_CREDIT_ACTIVE_Active_SUM', 'BURO_AMT_CREDIT_SUM_DEBT_MEAN',
-            #              'YEARS_EMPLOYED', 'YEARS_ID_PUBLISH', 'INSTAL_PAYMENT_DIFF_MEAN', 'BURO_AMT_CREDIT_SUM_MEAN',
-            #              'AMT_ANNUITY', 'AMT_GOODS_PRICE', 'BURO_YEARS_CREDIT_ENDDATE_MEAN', 'AMT_CREDIT',
-            #              'YEARS_LAST_PHONE_CHANGE', 'POS_MONTHS_BALANCE_MEAN', 'INSTAL_DAYS_BEFORE_DUE_MEAN',
-            #              'BURO_AMT_CREDIT_SUM_DEBT_SUM', 'CODE_GENDER', 'PREV_YEARS_DECISION_MEAN',
-            #              'REGION_POPULATION_RELATIVE', 'DEBT_RATIO', 'BURO_AMT_CREDIT_SUM_SUM',
-            #              'BURO_YEARS_CREDIT_ENDDATE_MAX', 'NAME_EDUCATION_TYPE_Lower Secondary & Secondary',
-            #              'PREV_PAYMENT_RATE_MEAN']
 
             # Index du prêt choisi
             idx = ID_row.index[0]
@@ -272,6 +280,7 @@ try:
                         "modèle.</p>",
                         unsafe_allow_html=True)
 
+            # Appel à l'API pour obtenir les features importance globales
             res = requests.get(host + f"/get_feature_importance/")
             response = res.json()
             df_credit_score_model = pd.read_json(response, orient='index')
@@ -290,39 +299,44 @@ try:
             # ------------------------ Features importance locales ---------------------------
             # --------------------------------------------------------------------------------
 
-            # Chargement l'explainer
-            with open('credit_score_model_SHAP_explainer.sav', 'rb') as f:
-                explainer = dill.load(f)
-
             st.write("### Compréhension du score de l'ID sélectionné")
 
-            shap_val = explainer.shap_values(df.drop(['SK_ID_CURR'], axis=1).iloc[idx, :])
+            # Dataframe pour shap (ordre des features correspond à l'ordre donné en entrée du modèle)
+            df_shap = df[['CREDIT_DURATION', 'EXT_SOURCE_2', 'INSTAL_DAYS_PAST_DUE_MEAN',
+                          'PAYMENT_RATE', 'POS_CNT_INSTALMENT_FUTURE_MEAN', 'CREDIT_GOODS_PERC',
+                          'AGE', 'POS_NB_CREDIT', 'BURO_CREDIT_ACTIVE_Active_SUM', 'BURO_AMT_CREDIT_SUM_DEBT_MEAN',
+                          'YEARS_EMPLOYED', 'YEARS_ID_PUBLISH', 'INSTAL_PAYMENT_DIFF_MEAN', 'BURO_AMT_CREDIT_SUM_MEAN',
+                          'AMT_ANNUITY', 'AMT_GOODS_PRICE', 'BURO_YEARS_CREDIT_ENDDATE_MEAN', 'AMT_CREDIT',
+                          'YEARS_LAST_PHONE_CHANGE', 'POS_MONTHS_BALANCE_MEAN', 'INSTAL_DAYS_BEFORE_DUE_MEAN',
+                          'BURO_AMT_CREDIT_SUM_DEBT_SUM', 'CODE_GENDER', 'PREV_YEARS_DECISION_MEAN',
+                          'REGION_POPULATION_RELATIVE', 'DEBT_RATIO', 'BURO_AMT_CREDIT_SUM_SUM',
+                          'BURO_YEARS_CREDIT_ENDDATE_MAX', 'NAME_EDUCATION_TYPE_Lower Secondary & Secondary',
+                          'PREV_PAYMENT_RATE_MEAN']]
 
-            # Bar plot
-            # https://shap.readthedocs.io/en/latest/example_notebooks/api_examples/plots/bar.html
-            fig = plt.figure()
-            plt.title("Contribution des variables dans le calcul du score", fontsize=18)
-            st_shap(shap.bar_plot(shap_val,
-                                  feature_names=df.drop(['SK_ID_CURR'], axis=1).columns.tolist(),
-                                  max_display=15),
-                    width=1200,
-                    height=650)
+            # Chargement du scaler et du modèle LightGBM
+            scaler = load(open('credit_score_model_scaler.sav', 'rb'))
+            credit_score_model = load(open('credit_score_model_SHAP.sav', 'rb'))
 
-            expander = st.expander("Interprétation du barplot")
-            expander.markdown("<p class='text-font'>Le graphique ci-dessus est appelé un bar plot. Il permet de "
-                              "visualiser les caractéristiques de l'ID du prêt sélectionné qui <strong>contribuent "
-                              "positivement (en rose / à droite) et négativement (en bleu / à gauche) à la prédiction "
-                              "finale</strong>."
-                              "Ici, les 15 caractéristiques les plus importantes sont affichées.</p>",
-                              unsafe_allow_html=True)
+            # Standardisation des données
+            scaled_df_shap = scaler.transform(df_shap)
+
+            # Sélection de l'index de la ligne du df correspondant au prêt sélectionné
+            subsampled_scaled_df_shap = scaled_df_shap[idx].reshape(1, -1)
+
+            # Création de l'explainer
+            explainer = shap.TreeExplainer(credit_score_model)
+
+            # Calcul des shap_values de la ligne sélectionnée
+            shap_values = explainer.shap_values(subsampled_scaled_df_shap)
 
             # Décision plot
             # https://shap-lrjball.readthedocs.io/en/latest/generated/shap.decision_plot.html
             fig1 = plt.figure()
             plt.title("Chemin suivi pour l'obtention du score", fontsize=18)
-            st_shap(shap.decision_plot(explainer.expected_value,
-                                       shap_val,
-                                       feature_names=df.drop(['SK_ID_CURR'], axis=1).columns.tolist(),
+            st_shap(shap.decision_plot(base_value=explainer.expected_value[1],
+                                       shap_values=shap_values[1],
+                                       features=subsampled_scaled_df_shap,
+                                       feature_names=df_shap.columns.tolist(),
                                        link='logit',
                                        feature_display_range=slice(-1, -31, -1)),
                     width=1200,
@@ -341,9 +355,10 @@ try:
 
             # Force plot
             # https: // shap.readthedocs.io / en / latest / generated / shap.plots.force.html
-            st_shap(shap.force_plot(base_value=explainer.expected_value,
-                                    shap_values=shap_val,
-                                    feature_names=df.drop(['SK_ID_CURR'], axis=1).columns.tolist(),
+            st_shap(shap.force_plot(base_value=explainer.expected_value[1],
+                                    shap_values=shap_values[1],
+                                    features=subsampled_scaled_df_shap,
+                                    feature_names=df_shap.columns,
                                     out_names='Prob Défaillance',
                                     link='logit'))  # pour avoir les probabilités
 
