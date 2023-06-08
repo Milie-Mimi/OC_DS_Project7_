@@ -2,6 +2,8 @@
 
 ## Découpage du dossier "Dashboard_API"
 
+![Streamlit](streamlit_logo.PNG)
+
 Ce dossier contient les fichiers ayant permis la réalisation du dashboard sur Streamlit (partie front-end).
 
 **Pages du dashboard**
