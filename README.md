@@ -1,5 +1,7 @@
 # Projet 7: Implémentez un modèle de scoring
 
+Lien Dashboard: https://vast-mesa-70281.herokuapp.com/
+Lien API: https://api-scoring-app.herokuapp.com/docs
 
 L’entreprise souhaite mettre en œuvre un outil de “scoring crédit” pour calculer la **probabilité qu’un client rembourse son crédit**, puis **classifie la demande en crédit accordé ou refusé**. Elle souhaite donc développer un algorithme de classification en s’appuyant sur des sources de données variées (données comportementales, données provenant d'autres institutions financières, etc.).
 
@@ -27,7 +29,7 @@ Michaël vous a fourni des spécifications pour le dashboard interactif. Celui-c
 
 Michaël vous propose d’utiliser Dash ou Bokeh ou Streamlit pour réaliser le Dahboard interactif.
 
-Michaël souhaite également, afin de pouvoir faire évoluer régulièrement le modèle, tester la mise en oeuvre d’une **démarche de type MLOps** d’automatisation et d’industrialisation de la gestion du cycle de vie du modèle. Il vous envoie la liste d’outils à utiliser pour créer une plateforme MLOps qui s’appuie sur des outils Open Source. 
+Michaël souhaite également, afin de pouvoir faire évoluer régulièrement le modèle, tester la mise en œuvre d’une **démarche de type MLOps** d’automatisation et d’industrialisation de la gestion du cycle de vie du modèle. Il vous envoie la liste d’outils à utiliser pour créer une plateforme MLOps qui s’appuie sur des outils Open Source. 
 
 Michaël vous demande également de **tester l’utilisation de la librairie evidently** pour détecter dans le futur du **Data Drift** en production. Pour cela vous prendrez comme hypothèse que le dataset “application_train” représente les datas pour la modélisation et le dataset “application_test” représente les datas de nouveaux clients une fois le modèle en production. 
 
@@ -35,7 +37,7 @@ L’analyse à l’aide d’evidently vous permettra de détecter éventuellemen
 
 Le **déploiement de l'application dashboard et de l’API seront réalisées sur une plateforme Cloud**, de préférence une solution gratuite, par exemple Azure webapp (ASP F1 gratuit), PythonAnywhere, Heroku avec le package “student” de Github ou tout autre solution.
 
-D’autre part Michaël attend que vous mettiez en oeuvre une démarche d’élaboration des modèles avec **Cross-Validation**, via GridsearchCV ou équivalent.
+D’autre part Michaël attend que vous mettiez en œuvre une démarche d’élaboration des modèles avec **Cross-Validation**, via GridsearchCV ou équivalent.
 
 Il vous donne un dernier conseil : si vous obtenez des scores supérieurs au 1er du challenge Kaggle (AUC > 0.82), posez-vous la question si vous n’avez pas de l’overfitting dans votre modèle.
 
@@ -51,8 +53,10 @@ Michaël vous fait part de sa vigilance dans l’élaboration du modèle, concer
     - Vous pourrez supposer, par exemple, que le coût d’un FN est dix fois supérieur au coût d’un FP
     - Vous créerez un score “métier” (minimisation du coût d’erreur de prédiction des FN et FP) pour comparer les modèles, afin de choisir le meilleur modèle et ses meilleurs hyperparamètres. Attention cette minimisation du coût métier doit passer par l’optimisation du seuil qui détermine, à partir d’une probabilité, la classe 0 ou 1 (un “predict” suppose un seuil à 0.5 qui n’est pas forcément l’optimum)
     - En parallèle, maintenez pour comparaison et contrôle des mesures plus techniques, telles que l’AUC et l’accuracy 
-        
-        
+
+
+
+
 ## Livrables 
 
 - **L’application de dashboard** interactif répondant aux spécifications ci-dessus et l’API de prédiction du score, déployées chacunes sur le cloud.
