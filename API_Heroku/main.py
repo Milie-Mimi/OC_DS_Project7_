@@ -1,8 +1,8 @@
-import pandas as pd
 from fastapi import FastAPI
 from sklearn.preprocessing import LabelEncoder
 from pickle import load
 from pydantic import BaseModel
+import pandas as pd
 
 
 # --------------------------------------------------------------------------------
