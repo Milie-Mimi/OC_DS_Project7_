@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 import requests
 
-host = "https://api-scoring-app.herokuapp.com"
+host = "https://oc-ds-project7-api.onrender.com"
 
 # --------------------------------------------------------------------------------
 # --------------------- Configuration de la page ---------------------------------
