@@ -3,7 +3,7 @@ import streamlit as st
 from PIL import Image
 import requests
 
-host = "https://api-scoring-app.herokuapp.com"
+host = "https://oc-ds-project7-api.onrender.com"
 
 # --------------------------------------------------------------------------------
 # --------------------- Configuration de la page ---------------------------------
