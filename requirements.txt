@@ -11,3 +11,7 @@ pydantic==1.10.7
 uvicorn==0.22.0
 lightgbm==3.3.5
 openpyxl==3.1.2
+numpy~=1.26.4
+scipy~=1.13.1
+requests~=2.32.3
+pillow~=10.3.0

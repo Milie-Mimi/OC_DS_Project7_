@@ -10,7 +10,7 @@ import shap
 from streamlit_shap import st_shap
 import requests
 
-host = "https://oc-ds-project7-api.onrender.com"
+host = "https://api-scoring.onrender.com"
 # host = "https://api-scoring-app.herokuapp.com"
 
 # --------------------------------------------------------------------------------
