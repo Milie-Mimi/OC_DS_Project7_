@@ -39,19 +39,19 @@ st.markdown("""
 # -------------------------------- Image -----------------------------------------
 # --------------------------------------------------------------------------------
 
-col1, col2 = st.columns(2)
+col1 = st.columns(1)
 
 #col1.image("Home.jpg")
-col1.markdown("<p class='image_credit-font'><em>Image credit: <br>Creator: User Noah Windler (@noahwindler) from "
-              "Unsplash <br>License: Do whatever you want. https://unsplash.com/license <br>URL: "
-              "https://unsplash.com/photos/gQI8BOaL69o</em></p>", unsafe_allow_html=True)
+#col1.markdown("<p class='image_credit-font'><em>Image credit: <br>Creator: User Noah Windler (@noahwindler) from "
+#              "Unsplash <br>License: Do whatever you want. https://unsplash.com/license <br>URL: "
+#              "https://unsplash.com/photos/gQI8BOaL69o</em></p>", unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------------
 # ---------------------------- Introduction --------------------------------------
 # --------------------------------------------------------------------------------
 
-col2.title("Outil de scoring crédit")
-col2.markdown("<p class='text-font'>Prêt à dépenser propose des crédits à la consommation pour les personnes ayant "
+col1.title("Outil de scoring crédit")
+col1.markdown("<p class='text-font'>Prêt à dépenser propose des crédits à la consommation pour les personnes ayant "
               "peu ou pas du tout d'historique de prêt. <br><br>"
               "Cette  application permet de calculer la <strong>probabilité qu'un client rembourse son "
               "crédit</strong> puis classifie la demande en <strong>crédit accordé ou refusé.</strong> "
